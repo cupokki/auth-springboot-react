@@ -2,9 +2,8 @@ package dev.cupokki.auth.jwt;
 
 import dev.cupokki.auth.dto.JwtTokenDto;
 import dev.cupokki.auth.service.CustomUserDetailsService;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -15,7 +14,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class jwtProvider {
+public class JwtProvider {
 
     private final String KEY = "123";
     private final Long ACCESS_TOKEN_EXPIRATION = 60 * 15L; // 초
@@ -48,14 +47,25 @@ public class jwtProvider {
     }
 
     public UserDetails getAuthentication(String accessToken) {
-        var claims = Jwts.parserBuilder()
-                .setSigningKey(KEY)
-                .build()
-                .parseClaimsJws(accessToken)
-                .getBody();
+        try{
+            var claims = Jwts.parserBuilder()
+                    .setSigningKey(KEY)
+                    .build()
+                    .parseClaimsJws(accessToken)
+                    .getBody();
 
-        var userId = claims.getSubject();
+            var userId = claims.getSubject();
 
-        return customUserDetailsService.loadUserByUsername(userId);
+            return customUserDetailsService.loadUserByUsername(userId);
+        } catch (SignatureException | MalformedJwtException e) {
+            throw new RuntimeException(e);
+        } catch (ExpiredJwtException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedJwtException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }
