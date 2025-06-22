@@ -1,35 +1,56 @@
 package dev.cupokki.auth.controller;
 
+import dev.cupokki.auth.dto.UserSignUpRequest;
 import dev.cupokki.auth.entity.User;
+import dev.cupokki.auth.service.AuthService;
 import jakarta.annotation.security.PermitAll;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
 
 @RestController
 @RequestMapping("/api/v1")
+@RequiredArgsConstructor
+@Slf4j
 public class AuthController {
+
+    private final AuthService authService;
 
     @GetMapping("/auth/health")
     public ResponseEntity<?> health() {
         return ResponseEntity.ok("ok");
     }
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<?> login() {
         return ResponseEntity.ok(null);
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup() {
-        return ResponseEntity.ok(null);
+    @PostMapping("/auth/signup")
+    public ResponseEntity<?> signup(@RequestBody UserSignUpRequest userSignUpRequest) {
+        log.info("hi from controller");
+        var jwtTokenDto = authService.signup(userSignUpRequest);
+        var accessTokenCookie = ResponseCookie.from("accessToken", jwtTokenDto.accessToken())
+                .maxAge(Duration.ofHours(1))
+                .build();
+        var refreshTokenCookie = ResponseCookie.from("refreshToken", jwtTokenDto.refreshToken())
+                .maxAge(Duration.ofHours(1))
+                .build();
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .build();
     }
 
     @PermitAll
-    @PostMapping("/logout")
+    @PostMapping("/auth/logout")
     public ResponseEntity<?> logout(
             @AuthenticationPrincipal User user
     ) {
@@ -37,7 +58,7 @@ public class AuthController {
     }
 
     @PermitAll
-    @PostMapping("/reissue")
+    @PostMapping("/auth/reissue")
     public ResponseEntity<?> reissue(
             @AuthenticationPrincipal User user
     ) {
