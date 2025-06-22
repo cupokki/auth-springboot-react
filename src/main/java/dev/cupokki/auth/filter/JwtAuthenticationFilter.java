@@ -19,21 +19,25 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain
+    ) throws ServletException, IOException {
+
         String authorizationHeader = request.getHeader("Authorization");
+
         log.info("Hi {}", authorizationHeader);
-        if (authorizationHeader.isBlank() || !authorizationHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String accessToken = authorizationHeader.substring(7);
+            var userDetails = jwtProvider.getAuthentication(accessToken);
+            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.getAuthorities())
+            );
         }
 
-        String accessToken = authorizationHeader.substring(7);
-        var userDetails = jwtProvider.getAuthentication(accessToken);
-        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
-                userDetails,
-                null,
-                userDetails.getAuthorities())
-        );
         filterChain.doFilter(request, response);
     }
 }
