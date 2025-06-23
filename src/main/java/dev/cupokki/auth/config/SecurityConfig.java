@@ -37,7 +37,9 @@ public class SecurityConfig {
         return httpSecurity
                 .cors(cors -> cors.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll()
+                                .requestMatchers("/api/v1/auth/**").permitAll()
+                                .requestMatchers("/h2-console/**").permitAll()
+
 //                        .requestMatchers("/api/v1/auth/login").permitAll()
 //                        .requestMatchers("/api/v1/auth/reset-password").permitAll()
                         .anyRequest().authenticated()
@@ -45,6 +47,9 @@ public class SecurityConfig {
                 .sessionManagement(session-> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin()))
+
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
