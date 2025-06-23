@@ -1,5 +1,6 @@
 package dev.cupokki.auth.controller;
 
+import dev.cupokki.auth.dto.UserLoginRequest;
 import dev.cupokki.auth.dto.UserSignUpRequest;
 import dev.cupokki.auth.entity.User;
 import dev.cupokki.auth.service.AuthService;
@@ -28,14 +29,9 @@ public class AuthController {
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<?> login() {
-        return ResponseEntity.ok(null);
-    }
-
-    @PostMapping("/auth/signup")
-    public ResponseEntity<?> signup(@RequestBody UserSignUpRequest userSignUpRequest) {
+    public ResponseEntity<?> login(@RequestBody UserLoginRequest userLoginRequest) {
         log.info("hi from controller");
-        var jwtTokenDto = authService.signup(userSignUpRequest);
+        var jwtTokenDto = authService.login(userLoginRequest);
         var accessTokenCookie = ResponseCookie.from("accessToken", jwtTokenDto.accessToken())
                 .maxAge(Duration.ofHours(1))
                 .build();
@@ -47,6 +43,12 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .build();
+    }
+
+    @PostMapping("/auth/signup")
+    public ResponseEntity<?> signup(@RequestBody UserSignUpRequest userSignUpRequest) {
+        authService.signup(userSignUpRequest);
+        return ResponseEntity.ok(null);
     }
 
     @PermitAll
