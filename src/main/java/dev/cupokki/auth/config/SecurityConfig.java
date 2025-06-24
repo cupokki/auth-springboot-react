@@ -36,16 +36,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .cors(cors -> cors.disable())
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                                 .requestMatchers("/h2-console/**").permitAll()
-
-//                        .requestMatchers("/api/v1/auth/login").permitAll()
-//                        .requestMatchers("/api/v1/auth/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session-> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.sameOrigin()))
