@@ -2,19 +2,19 @@ package dev.cupokki.auth.entity;
 
 import com.fasterxml.jackson.databind.ser.Serializers;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
 
-
+@Table(name = "users")
 @Getter
 @Builder
 @Entity
-@Table(name = "users")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class User extends BaseEntity implements UserDetails {
 
     @Id
@@ -23,6 +23,7 @@ public class User extends BaseEntity implements UserDetails {
 
     private String username;
 
+    @Column(unique = true)
     private String email;
 
     private String password;
