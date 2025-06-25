@@ -4,6 +4,8 @@ import dev.cupokki.auth.dto.JwtTokenDto;
 import dev.cupokki.auth.dto.UserLoginRequest;
 import dev.cupokki.auth.dto.UserSignUpRequest;
 import dev.cupokki.auth.entity.User;
+import dev.cupokki.auth.exception.AuthenticationErrorCode;
+import dev.cupokki.auth.exception.AuthenticationException;
 import dev.cupokki.auth.jwt.JwtProvider;
 import dev.cupokki.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,21 +24,22 @@ public class AuthService {
 
     public JwtTokenDto login(UserLoginRequest userLoginRequest) {
         var foundedUser = userRepository.findByEmail(userLoginRequest.email())
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> new AuthenticationException(AuthenticationErrorCode.INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(userLoginRequest.password(), foundedUser.getPassword())) {
-            throw new RuntimeException();
+            throw new AuthenticationException(AuthenticationErrorCode.INVALID_CREDENTIALS);
         }
 
         return jwtProvider.createToken(foundedUser.getId(), userLoginRequest.isLongTerm());
     }
 
     public void signup(UserSignUpRequest userSignUpRequest) {
-        if (!userSignUpRequest.password().equals(userSignUpRequest.confirmPassword())) {
-            throw new RuntimeException();
-        }
         if (userRepository.existsByEmail(userSignUpRequest.email())) {
-            throw new RuntimeException();
+            throw new AuthenticationException(AuthenticationErrorCode.DUPLICATE_EMAIL);
+        }
+
+        if (!userSignUpRequest.password().equals(userSignUpRequest.confirmPassword())) {
+            throw new AuthenticationException(AuthenticationErrorCode.CONFIRM_PASSWORD_MISMATCH);
         }
 
         var newUser = User.builder()
@@ -46,7 +49,6 @@ public class AuthService {
                 .build();
 
         userRepository.save(newUser);
-
 //        return jwtProvider.createToken(newUser.getId(), false);
     }
 }
