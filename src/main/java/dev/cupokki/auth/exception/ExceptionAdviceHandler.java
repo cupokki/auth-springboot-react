@@ -1,10 +1,14 @@
 package dev.cupokki.auth.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.websocket.AuthenticationException;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Locale;
 
 @RestControllerAdvice
 @Slf4j
@@ -16,9 +20,15 @@ public class ExceptionAdviceHandler {
         return ResponseEntity.badRequest().body(e.getLocalizedMessage());
     }
 
+    @ExceptionHandler(ErrorResponseException.class)
+    public ResponseEntity<?> AuthenticationException(ErrorResponseException ex) {
+        log.warn(ex.getMessage());
+        return ResponseEntity.status(ex.getStatusCode()).body(ex.getBody());
+    }
+
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<?> AuthenticationException(UserAuthenticationException e) {
-        log.warn(e.getMessage());
-        return ResponseEntity.status(e.getHttpStatusCode()).body(e.getMessage());
+    public ProblemDetail handleException(AuthenticationException ex, Locale locale) {
+        log.warn(ex.getMessage());
+        return ex.toProblemDetail();
     }
 }
