@@ -1,5 +1,6 @@
 package dev.cupokki.auth.filter;
 
+import dev.cupokki.auth.exception.AuthenticationException;
 import dev.cupokki.auth.jwt.JwtProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,32 +13,36 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final FilterErrorResponseSender filterErrorResponseSender;
 
     @Override
     protected void doFilterInternal(
             HttpServletRequest request, HttpServletResponse response, FilterChain filterChain
     ) throws ServletException, IOException {
+        try{
+            String authorizationHeader = request.getHeader("Authorization");
 
-        String authorizationHeader = request.getHeader("Authorization");
-
-        log.info("Hi {}", authorizationHeader);
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String accessToken = authorizationHeader.substring(7);
-            var userDetails = jwtProvider.getAuthentication(accessToken);
-            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.getAuthorities())
-            );
+            log.info("Hi {}", authorizationHeader);
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                String accessToken = authorizationHeader.substring(7);
+                var userDetails = jwtProvider.getAuthentication(accessToken);
+                SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities())
+                );
+            }
+            filterChain.doFilter(request, response);
+        } catch (AuthenticationException ex) {
+            log.warn(ex.getMessage());
+            filterErrorResponseSender.send(response, ex);
         }
 
-        filterChain.doFilter(request, response);
     }
 }
