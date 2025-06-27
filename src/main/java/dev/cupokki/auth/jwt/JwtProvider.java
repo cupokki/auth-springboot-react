@@ -1,6 +1,8 @@
 package dev.cupokki.auth.jwt;
 
 import dev.cupokki.auth.dto.JwtTokenDto;
+import dev.cupokki.auth.exception.AuthenticationErrorCode;
+import dev.cupokki.auth.exception.AuthenticationException;
 import dev.cupokki.auth.service.CustomUserDetailsService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.SignatureException;
@@ -8,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.time.*;
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -58,13 +60,13 @@ public class JwtProvider {
 
             return customUserDetailsService.loadUserByUsername(userId);
         } catch (SignatureException | MalformedJwtException e) {
-            throw new RuntimeException(e);
+            throw new AuthenticationException(AuthenticationErrorCode.INVALID_TOKEN_SIGNATURE);
         } catch (ExpiredJwtException e) {
-            throw new RuntimeException(e);
+            throw new AuthenticationException(AuthenticationErrorCode.EXPIRED_TOKEN);
         } catch (UnsupportedJwtException e) {
-            throw new RuntimeException(e);
+            throw new AuthenticationException(AuthenticationErrorCode.UNSUPPORTED_TOKEN_FORMAT);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException(e);
+            throw new AuthenticationException(AuthenticationErrorCode.INVALID_TOKEN_VALUE);
         }
 
     }
