@@ -10,6 +10,9 @@ public class AuthenticationException extends RuntimeException{
     private AuthenticationErrorCode authenticationErrorCode;
 
     public ProblemDetail toProblemDetail() {
-        return ProblemDetail.forStatusAndDetail(authenticationErrorCode.getHttpStatus(), authenticationErrorCode.getMessage());
+        return ProblemDetail.forStatusAndDetail(
+                authenticationErrorCode.getHttpStatus(),
+                authenticationErrorCode.getMessage()
+        );
     }
 }
