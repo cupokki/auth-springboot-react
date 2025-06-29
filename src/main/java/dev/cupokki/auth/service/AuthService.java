@@ -45,6 +45,9 @@ public class AuthService {
 
         var claims = jwtProvider.extractClaims(jwtTokenDto.refreshToken());
 
+        // 기존 refresh Token을 만료시켜야한다. 어떻게 알것인가?
+        // 1. user의 refreshToken 조회하기. 필드 추가필요
+
         refreshTokenWhiteListRepository.save(WhitelistItem.builder()
                 .jti(claims.getId())
                 .ttl(Duration.between(Instant.now(), claims.getExpiration().toInstant()).getSeconds())
@@ -114,4 +117,16 @@ public class AuthService {
 
         return jwtTokenDto;
     }
+
+    public boolean validateDuplicateEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+//    public void resetPassword() {
+//        return;
+//    }
+//
+//    public void findEmail() {
+//
+//    }
 }

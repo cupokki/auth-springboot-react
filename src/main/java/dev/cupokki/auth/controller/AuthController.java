@@ -61,7 +61,6 @@ public class AuthController {
         return ResponseEntity.ok(null);
     }
 
-    @PermitAll
     @PostMapping("/auth/logout")
     public ResponseEntity<?> logout(
             @AuthenticationPrincipal User user,
@@ -91,7 +90,6 @@ public class AuthController {
                 .build();
     }
 
-    @PermitAll
     @PostMapping("/auth/reissue")
     public ResponseEntity<?> reissue(
             @AuthenticationPrincipal User user,
@@ -118,5 +116,11 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .build();
+    }
+
+    public ResponseEntity<?> validateEmailDuplication(
+            @RequestBody String email
+    ) {
+        return ResponseEntity.ok(authService.validateDuplicateEmail(email));
     }
 }
