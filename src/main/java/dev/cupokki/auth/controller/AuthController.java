@@ -38,7 +38,7 @@ public class AuthController {
                 .secure(true)
                 .path("/")
                 .sameSite("None")
-                .maxAge(Duration.ofHours(1))
+                .maxAge(Duration.ofMinutes(15))
                 .build();
         var refreshTokenCookie = ResponseCookie.from("refreshToken", jwtTokenDto.refreshToken())
                 .httpOnly(true)
@@ -94,8 +94,10 @@ public class AuthController {
     @PermitAll
     @PostMapping("/auth/reissue")
     public ResponseEntity<?> reissue(
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal User user,
+            @CookieValue("refreshToken") String refreshToken
     ) {
+//        authService.reissue(user.getId(), refreshToken);
         return ResponseEntity.ok(null);
     }
 }
