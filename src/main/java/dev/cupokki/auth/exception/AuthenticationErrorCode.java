@@ -3,8 +3,6 @@ package dev.cupokki.auth.exception;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ProblemDetail;
 
 @Getter
 @AllArgsConstructor

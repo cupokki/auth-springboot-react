@@ -4,7 +4,6 @@ import dev.cupokki.auth.dto.UserLoginRequest;
 import dev.cupokki.auth.dto.UserSignUpRequest;
 import dev.cupokki.auth.entity.User;
 import dev.cupokki.auth.service.AuthService;
-import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
