@@ -14,6 +14,7 @@ import dev.cupokki.auth.repository.RefreshTokenWhitelistRepository;
 import dev.cupokki.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,14 +74,44 @@ public class AuthService {
     @Transactional
     public void logout(Long userId, String accessToken, String refreshToken) {
         Instant now = Instant.now();
-        var accessTokenClaims = jwtProvider.extractClaims(accessToken);
         var refreshTokenClaims = jwtProvider.extractClaims(refreshToken);
+        var accessTokenClaims = jwtProvider.extractClaims(accessToken);
 
-        accessTokenBlackListRepository.save(BlacklistItem.builder()
+        refreshTokenWhiteListRepository.deleteById(refreshTokenClaims.getId());
+        accessTokenBlackListRepository.save(BlacklistItem.builder() // jpa 아니므로 예외처리 필요
                 .jti(accessTokenClaims.getId())
                 .ttl(Duration.between(now, accessTokenClaims.getExpiration().toInstant()).getSeconds())
                 .build());
 
-        refreshTokenWhiteListRepository.deleteById(refreshTokenClaims.getId());
+
+    }
+
+    @Transactional
+    public JwtTokenDto reissue(String refreshToken) {
+        var refreshTokenClaims = jwtProvider.extractClaims(refreshToken);
+        var refreshTokenId = refreshTokenClaims.getId();
+        var userId = Long.parseLong(refreshTokenClaims.getSubject());
+        var whitelistItem= refreshTokenWhiteListRepository.findById(refreshTokenId)
+                .orElseThrow(() -> new AuthenticationException(AuthenticationErrorCode.EXPIRED_TOKEN));
+
+        refreshTokenWhiteListRepository.delete(whitelistItem);
+        var jwtTokenDto = jwtProvider.createToken(userId, false);
+        var claims = jwtProvider.extractClaims(jwtTokenDto.refreshToken());
+        var now = Instant.now();
+        refreshTokenWhiteListRepository.save(WhitelistItem.builder()
+                .jti(claims.getId())
+                .ttl(Duration.between(now, claims.getExpiration().toInstant()).getSeconds())
+                .build()
+        );
+
+        // 만료처리 안해도 되는가? 계속 리이슈하면 토큰 무제한 발급가능해진다. -> 그냥 429처리하는게 더 옮은 방향이라 생각된다.
+//        var accessTokenClaims = jwtProvider.extractClaims(accessToken);
+//        accessTokenBlackListRepository.save(BlacklistItem.builder() // 기존 엑세스 토큰 만료, 실패 예외 필요
+//                .jti(accessTokenClaims.getId())
+//                .ttl(Duration.between(now, accessTokenClaims.getExpiration().toInstant()).getSeconds())
+//                .build()
+//        );
+
+        return jwtTokenDto;
     }
 }

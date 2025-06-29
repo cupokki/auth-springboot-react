@@ -5,10 +5,10 @@ import dev.cupokki.auth.dto.UserSignUpRequest;
 import dev.cupokki.auth.entity.User;
 import dev.cupokki.auth.service.AuthService;
 import jakarta.annotation.security.PermitAll;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -49,7 +49,7 @@ public class AuthController {
                 .build();
 
         return ResponseEntity
-                .ok()
+                .status(HttpStatus.OK)
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .build();
@@ -85,7 +85,7 @@ public class AuthController {
                 .build();
 
         return ResponseEntity
-                .ok()
+                .status(HttpStatus.OK)
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .build();
@@ -97,7 +97,26 @@ public class AuthController {
             @AuthenticationPrincipal User user,
             @CookieValue("refreshToken") String refreshToken
     ) {
-//        authService.reissue(user.getId(), refreshToken);
-        return ResponseEntity.ok(null);
+        var jwtTokenDto = authService.reissue(refreshToken);
+        var accessTokenCookie = ResponseCookie.from("accessToken", jwtTokenDto.accessToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .sameSite("None")
+                .maxAge(Duration.ofMinutes(15))
+                .build();
+        var refreshTokenCookie = ResponseCookie.from("refreshToken", jwtTokenDto.refreshToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .sameSite("None")
+                .maxAge(Duration.ofHours(1))
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .build();
     }
 }
