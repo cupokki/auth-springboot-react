@@ -1,7 +1,7 @@
 package dev.cupokki.auth.filter;
 
 import dev.cupokki.auth.exception.AuthenticationException;
-import dev.cupokki.auth.jwt.JwtProvider;
+import dev.cupokki.auth.jwt.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +20,7 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtProvider jwtProvider;
+    private final JwtTokenProvider jwtTokenProvider;
     private final FilterErrorResponseSender filterErrorResponseSender;
 
     @Override
@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info("Hi {}", authorizationHeader);
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 String accessToken = authorizationHeader.substring(7);
-                var userDetails = jwtProvider.getAuthentication(accessToken);
+                var userDetails = jwtTokenProvider.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,

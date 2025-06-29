@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class JwtProvider {
+public class JwtTokenProvider {
 
     private final String KEY = "121231245512351253241231212312455123512532412312123124551235125324123";
     private final Long ACCESS_TOKEN_EXPIRATION = 60 * 15L; // 초
