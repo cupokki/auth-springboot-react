@@ -5,13 +5,11 @@ import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
-@EnableWebSecurity
 @RedisHash("RevokedJwt")
 @Getter
 @Builder
-public class RevokedJwt {
+public class BlacklistItem {
 
     @Id
     private String jti;

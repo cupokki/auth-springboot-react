@@ -3,12 +3,14 @@ package dev.cupokki.auth.service;
 import dev.cupokki.auth.dto.JwtTokenDto;
 import dev.cupokki.auth.dto.UserLoginRequest;
 import dev.cupokki.auth.dto.UserSignUpRequest;
-import dev.cupokki.auth.entity.RevokedJwt;
+import dev.cupokki.auth.entity.BlacklistItem;
 import dev.cupokki.auth.entity.User;
+import dev.cupokki.auth.entity.WhitelistItem;
 import dev.cupokki.auth.exception.AuthenticationErrorCode;
 import dev.cupokki.auth.exception.AuthenticationException;
 import dev.cupokki.auth.jwt.JwtProvider;
 import dev.cupokki.auth.repository.AccessTokenBlackListRepository;
+import dev.cupokki.auth.repository.RefreshTokenWhitelistRepository;
 import dev.cupokki.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +28,11 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final AccessTokenBlackListRepository accessTokenBlackListRepository;
+    private final RefreshTokenWhitelistRepository refreshTokenWhiteListRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
+    @Transactional
     public JwtTokenDto login(UserLoginRequest userLoginRequest) {
         var foundedUser = userRepository.findByEmail(userLoginRequest.email())
                 .orElseThrow(() -> new AuthenticationException(AuthenticationErrorCode.INVALID_CREDENTIALS));
@@ -36,8 +40,16 @@ public class AuthService {
         if (!passwordEncoder.matches(userLoginRequest.password(), foundedUser.getPassword())) {
             throw new AuthenticationException(AuthenticationErrorCode.INVALID_CREDENTIALS);
         }
+        var jwtTokenDto = jwtProvider.createToken(foundedUser.getId(), userLoginRequest.isLongTerm());
 
-        return jwtProvider.createToken(foundedUser.getId(), userLoginRequest.isLongTerm());
+        var claims = jwtProvider.extractClaims(jwtTokenDto.refreshToken());
+
+        refreshTokenWhiteListRepository.save(WhitelistItem.builder()
+                .jti(claims.getId())
+                .ttl(Duration.between(Instant.now(), claims.getExpiration().toInstant()).getSeconds())
+                .build()
+        );
+        return jwtTokenDto;
     }
 
     public void signup(UserSignUpRequest userSignUpRequest) {
@@ -63,13 +75,12 @@ public class AuthService {
         Instant now = Instant.now();
         var accessTokenClaims = jwtProvider.extractClaims(accessToken);
         var refreshTokenClaims = jwtProvider.extractClaims(refreshToken);
-        accessTokenBlackListRepository.save(RevokedJwt.builder()
+
+        accessTokenBlackListRepository.save(BlacklistItem.builder()
                 .jti(accessTokenClaims.getId())
                 .ttl(Duration.between(now, accessTokenClaims.getExpiration().toInstant()).getSeconds())
                 .build());
-        accessTokenBlackListRepository.save(RevokedJwt.builder()
-                .jti(refreshTokenClaims.getId())
-                .ttl(Duration.between(now, refreshTokenClaims.getExpiration().toInstant()).getSeconds())
-                .build());
+
+        refreshTokenWhiteListRepository.deleteById(refreshTokenClaims.getId());
     }
 }
