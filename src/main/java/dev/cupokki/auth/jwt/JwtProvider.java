@@ -3,6 +3,7 @@ package dev.cupokki.auth.jwt;
 import dev.cupokki.auth.dto.JwtTokenDto;
 import dev.cupokki.auth.exception.AuthenticationErrorCode;
 import dev.cupokki.auth.exception.AuthenticationException;
+import dev.cupokki.auth.repository.AccessTokenBlackListRepository;
 import dev.cupokki.auth.service.CustomUserDetailsService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.SignatureException;
@@ -24,6 +25,7 @@ public class JwtProvider {
     private final Long REFRESH_TOKEN_EXPIRATION = 60 * 15L;
     private final Long REFRESH_TOKEN_LONG_EXPIRATION = 60 * 15L;
     private final CustomUserDetailsService customUserDetailsService;
+    private final AccessTokenBlackListRepository accessTokenBlackListRepository;
 
     public JwtTokenDto createToken(Long userId, boolean isLongTerm) {
         var accessToken = Jwts.builder()
@@ -58,6 +60,11 @@ public class JwtProvider {
                     .getBody();
 
             var userId = claims.getSubject();
+            var jti = claims.getId();
+
+            if (accessTokenBlackListRepository.existsById(jti)) {
+                throw new AuthenticationException(AuthenticationErrorCode.EXPIRED_TOKEN);
+            }
 
             return customUserDetailsService.loadUserByUsername(userId);
         } catch (SignatureException | MalformedJwtException e) {
@@ -70,5 +77,13 @@ public class JwtProvider {
             throw new AuthenticationException(AuthenticationErrorCode.INVALID_TOKEN_VALUE);
         }
 
+    }
+
+    public Claims extractClaims(String accessToken) {
+        return Jwts.parserBuilder()
+                .setSigningKey(KEY)
+                .build()
+                .parseClaimsJws(accessToken)
+                .getBody();
     }
 }
