@@ -8,6 +8,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -65,7 +66,7 @@ public class JwtProvider {
             throw new AuthenticationException(AuthenticationErrorCode.EXPIRED_TOKEN);
         } catch (UnsupportedJwtException e) {
             throw new AuthenticationException(AuthenticationErrorCode.UNSUPPORTED_TOKEN_FORMAT);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | UsernameNotFoundException e) {
             throw new AuthenticationException(AuthenticationErrorCode.INVALID_TOKEN_VALUE);
         }
 
