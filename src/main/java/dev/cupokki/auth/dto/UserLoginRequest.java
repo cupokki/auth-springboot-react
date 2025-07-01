@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record UserLoginRequest(
-        String email,
+        String username,
         String password,
         Boolean isLongTerm
 ) {

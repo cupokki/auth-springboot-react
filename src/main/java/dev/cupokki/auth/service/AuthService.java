@@ -34,7 +34,7 @@ public class AuthService {
 
     @Transactional
     public JwtTokenDto login(UserLoginRequest userLoginRequest) {
-        var foundedUser = userRepository.findByEmail(userLoginRequest.email())
+        var foundedUser = userRepository.findByUsername(userLoginRequest.username())
                 .orElseThrow(() -> new AuthenticationException(AuthenticationErrorCode.INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(userLoginRequest.password(), foundedUser.getPassword())) {
@@ -56,6 +56,10 @@ public class AuthService {
     }
 
     public void signup(UserSignUpRequest userSignUpRequest) {
+        if (userRepository.existsByUsername(userSignUpRequest.username())) {
+            throw new AuthenticationException(AuthenticationErrorCode.DUPLICATE_USERNAME);
+        }
+
         if (userRepository.existsByEmail(userSignUpRequest.email())) {
             throw new AuthenticationException(AuthenticationErrorCode.DUPLICATE_EMAIL);
         }
@@ -65,9 +69,9 @@ public class AuthService {
         }
 
         var newUser = User.builder()
-                .email(userSignUpRequest.email())
                 .username(userSignUpRequest.username())
                 .password(passwordEncoder.encode(userSignUpRequest.password()))
+                .email(passwordEncoder.encode(userSignUpRequest.email()))
                 .build();
 
         userRepository.save(newUser);
@@ -121,11 +125,11 @@ public class AuthService {
         return userRepository.existsByEmail(email);
     }
 
-//    public void resetPassword() {
-//        return;
-//    }
-//
-//    public void findEmail() {
-//
-//    }
+    public void resetPassword() {
+        return;
+    }
+
+    public void findUsername() {
+
+    }
 }
