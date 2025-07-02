@@ -122,4 +122,11 @@ public class AuthController {
     ) {
         return ResponseEntity.ok(authService.validateDuplicateEmail(email));
     }
+
+    @GetMapping
+    public ResponseEntity<?> checkEmailDuplication(
+            @ResponseBody String email
+    ) {
+
+    }
 }

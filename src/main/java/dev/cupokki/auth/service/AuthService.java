@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +51,7 @@ public class AuthService {
 
         refreshTokenWhiteListRepository.save(WhitelistItem.builder()
                 .jti(claims.getId())
-                .ttl(Duration.between(Instant.now(), claims.getExpiration().toInstant()).getSeconds())
+                .expiredAt(claims.getExpiration())
                 .build()
         );
         return jwtTokenDto;
@@ -100,17 +102,21 @@ public class AuthService {
         var whitelistItem= refreshTokenWhiteListRepository.findById(refreshTokenId)
                 .orElseThrow(() -> new AuthenticationException(AuthenticationErrorCode.EXPIRED_TOKEN));
 
+        if (whitelistItem.getExpiredAt().after(new Date())) {
+            throw new AuthenticationException(AuthenticationErrorCode.EXPIRED_TOKEN);
+        }
+
         refreshTokenWhiteListRepository.delete(whitelistItem);
         var jwtTokenDto = jwtTokenProvider.createToken(userId, false);
         var claims = jwtTokenProvider.extractClaims(jwtTokenDto.refreshToken());
         var now = Instant.now();
         refreshTokenWhiteListRepository.save(WhitelistItem.builder()
                 .jti(claims.getId())
-                .ttl(Duration.between(now, claims.getExpiration().toInstant()).getSeconds())
+                .expiredAt(claims.getExpiration())
                 .build()
         );
 
-        // 만료처리 안해도 되는가? 계속 리이슈하면 토큰 무제한 발급가능해진다. -> 그냥 429처리하는게 더 옮은 방향이라 생각된다.
+        // 만료처리 안해도 되는가? 계속 리이슈하면 토큰 무제한 발급가능해진다. -> 그냥 409처리하는게 더 옮은 방향이라 생각된다.
 //        var accessTokenClaims = jwtTokenProvider.extractClaims(accessToken);
 //        accessTokenBlackListRepository.save(BlacklistItem.builder() // 기존 엑세스 토큰 만료, 실패 예외 필요
 //                .jti(accessTokenClaims.getId())
@@ -121,15 +127,24 @@ public class AuthService {
         return jwtTokenDto;
     }
 
-    public boolean validateDuplicateEmail(String email) {
-        return userRepository.existsByEmail(email);
+    public void checkEmailUniqueness(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new AuthenticationException(AuthenticationErrorCode.DUPLICATE_EMAIL);
+        }
+    }
+
+    public void checkUsernameUniqueness(String username) {
+        if (userRepository.existsByEmail(username)) {
+            throw new AuthenticationException(AuthenticationErrorCode.DUPLICATE_USERNAME);
+        }
     }
 
     public void resetPassword() {
         return;
     }
 
-    public void findUsername() {
-
+    public void findUsername(String email) {
+        var FoundUser = userRepository.findByEmail(passwordEncoder.encode(email))
+                .orElseThrow(() -> new AuthenticationException(AuthenticationErrorCode.DUPLICATE_USERNAME));
     }
 }

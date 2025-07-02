@@ -7,8 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.redis.core.RedisHash;
-import org.springframework.data.redis.core.TimeToLive;
+
+import java.util.Date;
 
 @Entity
 @Table(name = "whitelist_items")
@@ -21,5 +21,5 @@ public class WhitelistItem {
     @Id
     private String jti;
 
-    private Long ttl;
+    private Date expiredAt;
 }
