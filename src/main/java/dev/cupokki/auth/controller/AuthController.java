@@ -117,16 +117,18 @@ public class AuthController {
                 .build();
     }
 
-    public ResponseEntity<?> validateEmailDuplication(
+    public ResponseEntity<?> checkEmailUniqueness(
             @RequestBody String email
     ) {
-        return ResponseEntity.ok(authService.validateDuplicateEmail(email));
+        authService.checkEmailUniqueness(email);
+        return ResponseEntity.ok(null);
     }
 
     @GetMapping
-    public ResponseEntity<?> checkEmailDuplication(
-            @ResponseBody String email
+    public ResponseEntity<?> checkUsernameUniqueness(
+            @RequestBody String username
     ) {
-
+        authService.checkUsernameUniqueness(username);
+        return ResponseEntity.ok(null);
     }
 }
