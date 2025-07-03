@@ -1,7 +1,9 @@
 package dev.cupokki.auth.controller;
 
+import dev.cupokki.auth.dto.EmailRequest;
 import dev.cupokki.auth.dto.UserLoginRequest;
 import dev.cupokki.auth.dto.UserSignUpRequest;
+import dev.cupokki.auth.dto.UsernameRequest;
 import dev.cupokki.auth.entity.User;
 import dev.cupokki.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -119,17 +121,17 @@ public class AuthController {
 
     @PostMapping("/auth/check-email")
     public ResponseEntity<?> checkEmailUniqueness(
-            @RequestBody String email
+            @RequestBody EmailRequest emailRequest
     ) {
-        authService.checkEmailUniqueness(email);
+        authService.checkEmailUniqueness(emailRequest.email());
         return ResponseEntity.ok(null);
     }
 
     @PostMapping("/auth/check-username")
     public ResponseEntity<?> checkUsernameUniqueness(
-            @RequestBody String username
+            @RequestBody UsernameRequest usernameRequest
     ) {
-        authService.checkUsernameUniqueness(username);
+        authService.checkUsernameUniqueness(usernameRequest.username());
         return ResponseEntity.ok(null);
     }
 }
