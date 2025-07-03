@@ -74,7 +74,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/auth/signup").permitAll()
                         .requestMatchers("/api/v1/auth/reissue").permitAll()
-//                        .requestMatchers("/api/v1/auth/health").hasAuthority("USER")
+                        .requestMatchers("/api/v1/auth/check-email").permitAll()
+                        .requestMatchers("/api/v1/auth/check-username").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**", "/swagger-ui", "/swagger-ui/**", "/swagger-ui.html"
