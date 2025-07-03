@@ -23,7 +23,7 @@ public class JwtTokenProvider {
     private final String KEY = "121231245512351253241231212312455123512532412312123124551235125324123";
     private final Long ACCESS_TOKEN_EXPIRATION = 60 * 15L; // 초
     private final Long REFRESH_TOKEN_EXPIRATION = 60 * 15L;
-    private final Long REFRESH_TOKEN_LONG_EXPIRATION = 60 * 15L;
+    private final Long REFRESH_TOKEN_LONG_EXPIRATION = 60 * 60L;
     private final CustomUserDetailsService customUserDetailsService;
     private final AccessTokenBlackListRepository accessTokenBlackListRepository;
 

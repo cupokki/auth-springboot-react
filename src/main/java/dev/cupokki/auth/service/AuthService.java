@@ -45,7 +45,7 @@ public class AuthService {
         var jwtTokenDto = jwtTokenProvider.createToken(foundedUser.getId(), userLoginRequest.isLongTerm());
 
         var claims = jwtTokenProvider.extractClaims(jwtTokenDto.refreshToken());
-
+        log.info(claims.getExpiration().toString());
         // 기존 refresh Token을 만료시켜야한다. 어떻게 알것인가?
         // 1. user의 refreshToken 조회하기. 필드 추가필요
 
@@ -73,7 +73,7 @@ public class AuthService {
         var newUser = User.builder()
                 .username(userSignUpRequest.username())
                 .password(passwordEncoder.encode(userSignUpRequest.password()))
-                .email(passwordEncoder.encode(userSignUpRequest.email()))
+                .email(userSignUpRequest.email())
                 .build();
 
         userRepository.save(newUser);
@@ -102,7 +102,7 @@ public class AuthService {
         var whitelistItem= refreshTokenWhiteListRepository.findById(refreshTokenId)
                 .orElseThrow(() -> new AuthenticationException(AuthenticationErrorCode.EXPIRED_TOKEN));
 
-        if (whitelistItem.getExpiredAt().after(new Date())) {
+        if (whitelistItem.getExpiredAt().before(new Date())) {
             throw new AuthenticationException(AuthenticationErrorCode.EXPIRED_TOKEN);
         }
 

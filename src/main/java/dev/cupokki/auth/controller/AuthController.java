@@ -117,6 +117,7 @@ public class AuthController {
                 .build();
     }
 
+    @PostMapping("/auth/check-email")
     public ResponseEntity<?> checkEmailUniqueness(
             @RequestBody String email
     ) {
@@ -124,7 +125,7 @@ public class AuthController {
         return ResponseEntity.ok(null);
     }
 
-    @GetMapping
+    @PostMapping("/auth/check-username")
     public ResponseEntity<?> checkUsernameUniqueness(
             @RequestBody String username
     ) {
