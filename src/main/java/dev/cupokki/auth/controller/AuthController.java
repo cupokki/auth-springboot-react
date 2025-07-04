@@ -1,9 +1,6 @@
 package dev.cupokki.auth.controller;
 
-import dev.cupokki.auth.dto.EmailRequest;
-import dev.cupokki.auth.dto.UserLoginRequest;
-import dev.cupokki.auth.dto.UserSignUpRequest;
-import dev.cupokki.auth.dto.UsernameRequest;
+import dev.cupokki.auth.dto.*;
 import dev.cupokki.auth.entity.User;
 import dev.cupokki.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +43,7 @@ public class AuthController {
                 .secure(true)
                 .path("/")
                 .sameSite("None")
-                .maxAge(Duration.ofHours(1))
+                .maxAge(userLoginRequest.isLongTerm()? Duration.ofDays(30) : Duration.ofHours(1))
                 .build();
 
         return ResponseEntity
@@ -132,6 +129,14 @@ public class AuthController {
             @RequestBody UsernameRequest usernameRequest
     ) {
         authService.checkUsernameUniqueness(usernameRequest.username());
+        return ResponseEntity.ok(null);
+    }
+
+    @PostMapping("/auth/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @RequestBody PasswordResetRequest passwordResetRequest
+    ) {
+        authService.resetPassword(passwordResetRequest);
         return ResponseEntity.ok(null);
     }
 }

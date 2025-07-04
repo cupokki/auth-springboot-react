@@ -1,6 +1,7 @@
 package dev.cupokki.auth.service;
 
 import dev.cupokki.auth.dto.JwtTokenDto;
+import dev.cupokki.auth.dto.PasswordResetRequest;
 import dev.cupokki.auth.dto.UserLoginRequest;
 import dev.cupokki.auth.dto.UserSignUpRequest;
 import dev.cupokki.auth.entity.BlacklistItem;
@@ -45,15 +46,13 @@ public class AuthService {
         var jwtTokenDto = jwtTokenProvider.createToken(foundedUser.getId(), userLoginRequest.isLongTerm());
 
         var claims = jwtTokenProvider.extractClaims(jwtTokenDto.refreshToken());
-        log.info(claims.getExpiration().toString());
-        // 기존 refresh Token을 만료시켜야한다. 어떻게 알것인가?
-        // 1. user의 refreshToken 조회하기. 필드 추가필요
 
         refreshTokenWhiteListRepository.save(WhitelistItem.builder()
                 .jti(claims.getId())
                 .expiredAt(claims.getExpiration())
                 .build()
         );
+
         return jwtTokenDto;
     }
 
@@ -139,8 +138,8 @@ public class AuthService {
         }
     }
 
-    public void resetPassword() {
-        return;
+    public void resetPassword(PasswordResetRequest passwordResetRequest) {
+
     }
 
     public void findUsername(String email) {
