@@ -22,6 +22,12 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @GetMapping("/auth/me")
+    public ResponseEntity<?> me(@AuthenticationPrincipal User user){
+        log.info("me={}",user.getUsername());
+        return ResponseEntity.ok("ok");
+    }
+
     @GetMapping("/auth/health")
     public ResponseEntity<?> health() {
         return ResponseEntity.ok("ok");
@@ -29,18 +35,17 @@ public class AuthController {
 
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody UserLoginRequest userLoginRequest) {
-        log.info("hi from controller");
         var jwtTokenDto = authService.login(userLoginRequest);
         var accessTokenCookie = ResponseCookie.from("accessToken", jwtTokenDto.accessToken())
-                .httpOnly(true)
-                .secure(true)
+//                .httpOnly(true)
+//                .secure(true)
                 .path("/")
                 .sameSite("None")
                 .maxAge(Duration.ofMinutes(15))
                 .build();
         var refreshTokenCookie = ResponseCookie.from("refreshToken", jwtTokenDto.refreshToken())
-                .httpOnly(true)
-                .secure(true)
+//                .httpOnly(true)
+//                .secure(true)
                 .path("/")
                 .sameSite("None")
                 .maxAge(userLoginRequest.isLongTerm()? Duration.ofDays(30) : Duration.ofHours(1))
@@ -67,15 +72,15 @@ public class AuthController {
     ) {
         authService.logout(user.getId(), accessToken, refreshToken);
         var accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
-                .httpOnly(true)
-                .secure(true)
+//                .httpOnly(true)
+//                .secure(true)
                 .path("/")
                 .sameSite("None")
                 .maxAge(0)
                 .build();
         var refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(true)
+//                .httpOnly(true)
+//                .secure(true)
                 .path("/")
                 .sameSite("None")
                 .maxAge(0)
@@ -95,15 +100,15 @@ public class AuthController {
     ) {
         var jwtTokenDto = authService.reissue(refreshToken);
         var accessTokenCookie = ResponseCookie.from("accessToken", jwtTokenDto.accessToken())
-                .httpOnly(true)
-                .secure(true)
+//                .httpOnly(true)
+//                .secure(true)
                 .path("/")
                 .sameSite("None")
                 .maxAge(Duration.ofMinutes(15))
                 .build();
         var refreshTokenCookie = ResponseCookie.from("refreshToken", jwtTokenDto.refreshToken())
-                .httpOnly(true)
-                .secure(true)
+//                .httpOnly(true)
+//                .secure(true)
                 .path("/")
                 .sameSite("None")
                 .maxAge(Duration.ofHours(1))
