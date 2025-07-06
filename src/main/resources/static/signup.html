@@ -1,0 +1,107 @@
+<head>
+    <title>회원가입</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f6f8fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #333;
+            margin-top: 60px;
+        }
+        a {
+            color: #1976d2;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .form-container {
+            background: #fff;
+            padding: 32px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            margin-top: 60px;
+            min-width: 320px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background: #1976d2;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #125ea7;
+        }
+    </style>
+</head>
+<body>
+<h1>회원가입</h1>
+<form id="signupForm">
+    <input type="text" name="username" placeholder="username" value="test123">
+    <input type="text" name="email" placeholder="email" value="test123@test.com">
+    <input type="password" name="password" placeholder="password" value="test123">
+    <input type="password" name="confirmPassword" placeholder="confirmPassword" value="test123">
+    <button type="submit">회원가입</button>
+</form>
+<a href="login.html">로그인</a>
+<script>
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = e.target.username.value;
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+        const confirmPassword = e.target.confirmPassword.value;
+
+        if (password !== confirmPassword) {
+            alert('비밀번호가 일치하지 않습니다.');
+            return;
+        }
+
+        try {
+            const res = await fetch('http://localhost:8080/api/v1/auth/signup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username, email, password, confirmPassword
+                 })
+            });
+            if (res.ok) {
+                alert('회원가입 성공! 로그인 페이지로 이동합니다.');
+                window.location.href = 'login.html';
+            } else {
+                const data = await res.json().catch(() => ({}));
+                alert('회원가입 실패: ' + (data.message || res.status));
+            }
+        } catch (err) {
+            console.error('회원가입 에러:', err);
+            alert('에러 발생: ' + err.message);
+        }
+    });
+</script>
+</body>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<head>
+    <title>로그인</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f6f8fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #333;
+            margin-top: 60px;
+        }
+        a {
+            color: #1976d2;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .form-container {
+            background: #fff;
+            padding: 32px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            margin-top: 60px;
+            min-width: 320px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background: #1976d2;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #125ea7;
+        }
+    </style>
+</head>
+<body>
+
+<h1>로그인 페이지</h1>
+<form id="loginForm">
+    <input type="text" name="username" placeholder="아이디" value="test123">
+    <input type="password" name="password" placeholder="비밀번호" value="test123">
+    <label for="isLongTerm"/>
+    로그인 유지
+    <input type="checkbox" name="isLongTerm">
+    </label>
+    <button type="submit">로그인</button>
+</form>
+<div id="loginErrorMsg" style="color: red; margin-top: 10px;"></div>
+<a href="signup.html">회원가입</a>
+</body>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        document.getElementById('loginErrorMsg').textContent = '';
+        console.log(e.target.isLongTerm.checked)
+        try{
+            const res = await fetch("http://localhost:8080/api/v1/auth/login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    username: e.target.username.value,
+                    password: e.target.password.value,
+                    isLongTerm: e.target.isLongTerm.checked
+                })
+            })
+            if(res.ok) {
+                window.location.href = "index.html";
+            } else {
+                const data = await res.json().catch(() => ({}));
+                document.getElementById('loginErrorMsg').textContent = data.message || '로그인에 실패했습니다.';
+            }
+        } catch(err) {
+           console.error("로그인 에러:", err);
+            document.getElementById('loginErrorMsg').textContent = "에러 발생: " + err.message;
+        }
+    })
+
+</script>
+</html>

@@ -1,0 +1,100 @@
+<html>
+<head>
+    <title>홈</title>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f6f8fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #333;
+            margin-top: 60px;
+        }
+        a {
+            color: #1976d2;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .form-container {
+            background: #fff;
+            padding: 32px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            margin-top: 60px;
+            min-width: 320px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background: #1976d2;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #125ea7;
+        }
+    </style>
+</head>
+<body>
+<h1>로그인 하면 보이는 페이지</h1>
+<button id="logoutButton">로그아웃</button>
+</body>
+<script>
+    try {
+        const res = await fetch("http://localhost:8080/api/v1/auth/me",{
+                method: "GET",
+                credentials: 'include'
+            })
+    } catch (err) {
+        alert("페이지를 확인하려면 로그인 하십시오.", err)
+        window.location.href = 'login.html';
+    }
+
+    document.getElementById("logoutButton").addEventListener("click", async (e)=>{
+        alert("test")
+        try {
+            const res = await fetch("http://localhost:8080/api/v1/auth/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+
+                },
+                credentials: 'include'
+            })
+            if(res.ok)
+                window.location.href="login.html"
+        } catch(err) {
+            alert(err)
+        }
+
+    })
+</script>
+</html>
